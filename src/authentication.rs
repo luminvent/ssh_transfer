@@ -5,7 +5,9 @@ use std::path::PathBuf;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AuthenticationType {
   Interactive,
+  Agent,
   KeyFile(PathBuf),
+  KeyMemory(String),
   Password(String),
 }
 
@@ -19,8 +21,14 @@ impl AuthenticationType {
       AuthenticationType::Interactive => {
         unimplemented!()
       }
-      AuthenticationType::KeyFile(_key_file_path) => {
-        unimplemented!()
+      AuthenticationType::Agent => {
+        session.userauth_agent(username)?;
+      }
+      AuthenticationType::KeyFile(private_key_file_path) => {
+        session.userauth_pubkey_file(username, None, private_key_file_path, None)?;
+      }
+      AuthenticationType::KeyMemory(private_key) => {
+        session.userauth_pubkey_memory(username, None, private_key, None)?;
       }
       AuthenticationType::Password(password) => {
         if session
